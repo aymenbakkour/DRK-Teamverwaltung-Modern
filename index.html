@@ -13,40 +13,12 @@
     body {
       font-family: 'Inter', sans-serif;
     }
-    /* Add a simple transition for the modal */
-    #modal.hidden {
-      display: none;
-    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
 
-  <!-- Login Screen -->
-  <div id="login-screen" class="flex items-center justify-center min-h-screen bg-slate-100">
-    <div class="w-full max-w-xs p-6 bg-white rounded-xl shadow-lg shadow-slate-200/60 text-center">
-      <div class="text-5xl mb-3">🔒</div>
-      <h2 class="text-xl font-bold text-slate-800">PIN eingeben</h2>
-      <p class="text-sm text-slate-500 mb-4">Bitte geben Sie Ihren 4-stelligen Zugangscode ein.</p>
-      <input
-        id="pin-input"
-        type="password"
-        maxlength="4"
-        inputmode="numeric"
-        pattern="[0-9]*"
-        class="w-full p-3 text-center text-2xl tracking-[8px] bg-slate-100 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-        autofocus
-      />
-      <div class="mt-4">
-        <button id="login-btn" class="w-full py-2 px-4 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors shadow-sm">
-          Einloggen
-        </button>
-      </div>
-      <div id="login-error" class="text-sm text-red-500 mt-3 min-h-[1.25rem]"></div>
-    </div>
-  </div>
-
   <!-- Main App Container -->
-  <div id="app-container" class="p-4 md:p-7 min-h-screen hidden">
+  <div id="app-container" class="p-4 md:p-7 min-h-screen">
       <div class="wrap max-w-screen-xl mx-auto">
         <main class="panel flex-grow bg-white rounded-xl p-5 shadow-lg shadow-slate-200/60">
 
@@ -73,13 +45,7 @@
           <div id="stats-container" class="mb-6"></div>
 
           <div class="controls flex flex-col md:flex-row md:items-center gap-3 my-5 border-t border-slate-200 pt-6">
-            <button id="new-entry-btn" class="btn-primary w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors shadow-sm">
-              <!-- PlusIcon -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-              </svg>
-              Neuer Eintrag
-            </button>
+            <!-- Add button removed as per request -->
           </div>
 
           <!-- Tabs -->
@@ -88,32 +54,7 @@
           <!-- Content Views -->
           <div id="content-container" class="mt-4"></div>
 
-          <!-- Secondary Actions -->
-          <div class="secondary-controls mt-6 pt-6 border-t border-slate-200">
-            <div class="flex flex-col sm:flex-row gap-2 justify-end">
-              <button id="import-btn" class="btn-ghost w-full md:w-auto justify-center inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-semibold rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <!-- ImportIcon -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                </svg>
-                Import
-              </button>
-              <button id="export-btn" class="btn-ghost w-full md:w-auto justify-center inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-semibold rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <!-- ExportIcon -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                </svg>
-                Export
-              </button>
-              <button id="logout-btn" class="btn-logout w-full md:w-auto justify-center inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-600 font-semibold rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <!-- LogoutIcon -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
-                Abmelden
-              </button>
-            </div>
-          </div>
+          <!-- Secondary Actions Removed as per request -->
 
           <footer class="text-center text-xs text-slate-400 pt-8 mt-8 border-t border-slate-200">
             entwickelt von Aymen Bakkour
@@ -122,30 +63,18 @@
       </div>
   </div>
 
-  <!-- Modal -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-      <div id="modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-          <h3 id="modal-title" class="text-lg font-bold mb-4"></h3>
-          <form id="modal-form" class="space-y-4"></form>
-      </div>
-  </div>
-  
-  <input type="file" id="import-file-input" accept=".json" class="hidden">
+  <!-- Removed file input as per request -->
 
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
   // --- STATE AND CONSTANTS ---
-  const VALID_PIN = "9001";
   let state = {
-    isAuthenticated: false,
     activeTab: 'appointments',
     appointments: [],
     transfers: [],
     notes: [],
-    isModalOpen: false,
-    editingItemId: null,
   };
   
   const INITIAL_DATA = {
@@ -173,32 +102,17 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- DOM ELEMENTS ---
-  const loginScreen = document.getElementById('login-screen');
   const appContainer = document.getElementById('app-container');
-  const pinInput = document.getElementById('pin-input');
-  const loginBtn = document.getElementById('login-btn');
-  const loginError = document.getElementById('login-error');
-  const logoutBtn = document.getElementById('logout-btn');
-  const newEntryBtn = document.getElementById('new-entry-btn');
-  const exportBtn = document.getElementById('export-btn');
-  const importBtn = document.getElementById('import-btn');
-  const importFileInput = document.getElementById('import-file-input');
   const tabsContainer = document.getElementById('tabs-container');
   const contentContainer = document.getElementById('content-container');
   const statsContainer = document.getElementById('stats-container');
   const notificationsContainer = document.getElementById('notifications-container');
-  const modal = document.getElementById('modal');
-  const modalContent = document.getElementById('modal-content');
-  const modalTitle = document.getElementById('modal-title');
-  const modalForm = document.getElementById('modal-form');
 
   // --- ICONS (as functions returning SVG strings) ---
   const Icons = {
     Calendar: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>`,
     Transfer: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8z" /><path d="M12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" /></svg>`,
     Note: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm2 1a1 1 0 011-1h6a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V5z" clip-rule="evenodd" /></svg>`,
-    Edit: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg>`,
-    Delete: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>`,
     Important: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`,
   };
   
@@ -217,44 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Changes will not be persisted.
   };
   
-  // --- AUTHENTICATION ---
-  const handleLogin = () => {
-    if (pinInput.value === VALID_PIN) {
-      state.isAuthenticated = true;
-      loginError.textContent = '';
-      pinInput.value = '';
-      loginScreen.classList.add('hidden');
-      appContainer.classList.remove('hidden');
-
-      // Render a loading state immediately
-      updateDateTime();
-      statsContainer.innerHTML = `
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center animate-pulse">
-          <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
-          <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
-          <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
-          <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
-      </div>`;
-      contentContainer.innerHTML = `<div class="text-center py-16 text-slate-500">Daten werden geladen...</div>`;
-      notificationsContainer.innerHTML = `<div class="card bg-white rounded-xl p-4 shadow-lg shadow-slate-200/60 animate-pulse"><div class="h-6 bg-slate-100 rounded w-1/3 mb-3"></div><div class="space-y-3"><div class="h-10 bg-slate-100 rounded"></div><div class="h-10 bg-slate-100 rounded"></div></div></div>`;
-      
-      loadState();
-      
-      // Now render the actual content
-      render();
-    } else {
-      state.isAuthenticated = false;
-      loginError.textContent = 'Falscher PIN.';
-      pinInput.value = '';
-    }
-  };
-
-  const handleLogout = () => {
-    state.isAuthenticated = false;
-    appContainer.classList.add('hidden');
-    loginScreen.classList.remove('hidden');
-  };
-
   // --- RENDERING ---
   const updateDateTime = () => {
     const now = new Date();
@@ -267,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const render = () => {
-    if (!state.isAuthenticated) return;
     updateDateTime();
     renderTabs();
     renderContent();
@@ -333,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <th class="px-6 py-3">Adresse</th>
                 <th class="px-6 py-3">Datum</th>
                 <th class="px-6 py-3">Uhrzeit</th>
-                <th class="px-6 py-3">Aktionen</th>
               </tr>
             </thead>
             <tbody>`;
@@ -347,14 +221,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="px-6 py-4">${a.address}</td>
                 <td class="px-6 py-4">${new Date(a.date).toLocaleDateString('de-DE')}</td>
                 <td class="px-6 py-4">${a.time}</td>
-                <td class="px-6 py-4 flex gap-2">
-                  <button data-action="edit" data-id="${a.id}" class="p-2 text-cyan-600 hover:bg-cyan-100 rounded-md">${Icons.Edit()}</button>
-                  <button data-action="delete" data-id="${a.id}" class="p-2 text-red-600 hover:bg-red-100 rounded-md">${Icons.Delete()}</button>
-                </td>
               </tr>`;
         });
       } else {
-        content += `<tr><td colSpan="7" class="text-center py-8 text-slate-400">Keine Termine vorhanden</td></tr>`;
+        content += `<tr><td colSpan="6" class="text-center py-8 text-slate-400">Keine Termine vorhanden</td></tr>`;
       }
       content += `</tbody></table></div>`;
       contentContainer.innerHTML = content;
@@ -371,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <th class="px-6 py-3">Ziel</th>
               <th class="px-6 py-3">Datum</th>
               <th class="px-6 py-3">Uhrzeit</th>
-              <th class="px-6 py-3">Aktionen</th>
             </tr>
           </thead>
           <tbody>`;
@@ -384,14 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
               <td class="px-6 py-4">${t.ziel}</td>
               <td class="px-6 py-4">${new Date(t.date).toLocaleDateString('de-DE')}</td>
               <td class="px-6 py-4">${t.time}</td>
-              <td class="px-6 py-4 flex gap-2">
-                <button data-action="edit" data-id="${t.id}" class="p-2 text-cyan-600 hover:bg-cyan-100 rounded-md">${Icons.Edit()}</button>
-                <button data-action="delete" data-id="${t.id}" class="p-2 text-red-600 hover:bg-red-100 rounded-md">${Icons.Delete()}</button>
-              </td>
             </tr>`;
       });
     } else {
-      content += `<tr><td colSpan="6" class="text-center py-8 text-slate-400">Keine Transfers vorhanden</td></tr>`;
+      content += `<tr><td colSpan="5" class="text-center py-8 text-slate-400">Keine Transfers vorhanden</td></tr>`;
     }
     content += `</tbody></table></div>`;
     contentContainer.innerHTML = content;
@@ -408,10 +273,8 @@ document.addEventListener('DOMContentLoaded', () => {
               ${note.isImportant ? Icons.Important() : ''}
             </div>
             <p class="text-sm text-slate-600 flex-grow whitespace-pre-wrap break-words">${note.content}</p>
-            <div class="flex justify-end items-center gap-2 mt-4 pt-3 border-t border-amber-200">
-              <span class="text-xs text-slate-400 mr-auto">${new Date(note.createdAt).toLocaleString('de-DE')}</span>
-              <button data-action="edit" data-id="${note.id}" class="p-2 text-cyan-600 hover:bg-cyan-100 rounded-md">${Icons.Edit()}</button>
-              <button data-action="delete" data-id="${note.id}" class="p-2 text-red-600 hover:bg-red-100 rounded-md">${Icons.Delete()}</button>
+            <div class="mt-4 pt-3 border-t border-amber-200">
+              <span class="text-xs text-slate-400">${new Date(note.createdAt).toLocaleString('de-DE')}</span>
             </div>
           </div>`;
       });
@@ -449,19 +312,19 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       // Notifications Part
-      const todayAppointments = state.appointments.filter(a => a.createdAt.startsWith(today));
-      const todayTransfers = state.transfers.filter(t => t.createdAt.startsWith(today));
-      const todayImportantNotes = state.notes.filter(n => n.isImportant && n.createdAt.startsWith(today));
+      const todayAppointments = state.appointments.filter(a => a.date === today);
+      const todayTransfers = state.transfers.filter(t => t.date === today);
+      const todayImportantNotes = state.notes.filter(n => n.isImportant && n.createdAt && n.createdAt.startsWith(today));
       
       let notificationsHTML = '';
       todayAppointments.forEach(a => notificationsHTML += `
           <div class="text-xs p-2 bg-slate-50 rounded-md">
-              <p class="font-semibold text-slate-700">Neuer Termin:</p>
+              <p class="font-semibold text-slate-700">Termin für heute:</p>
               <p class="text-slate-600">${a.firstName} ${a.lastName} um ${a.time} Uhr</p>
           </div>`);
       todayTransfers.forEach(t => notificationsHTML += `
           <div class="text-xs p-2 bg-slate-50 rounded-md">
-              <p class="font-semibold text-slate-700">Neuer Transfer:</p>
+              <p class="font-semibold text-slate-700">Transfer für heute:</p>
               <p class="text-slate-600">${t.name} (Zi. ${t.zimmernummer}) nach ${t.ziel}</p>
           </div>`);
       todayImportantNotes.forEach(n => notificationsHTML += `
@@ -481,199 +344,33 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
   };
   
-  // --- MODAL & FORM LOGIC ---
-  
-  const openModal = () => {
-      state.isModalOpen = true;
-      modal.classList.remove('hidden');
-
-      const itemToEdit = state.editingItemId 
-        ? state[state.activeTab].find(item => item.id === state.editingItemId)
-        : null;
-
-      let formHtml = '';
-      if (state.activeTab === 'appointments') {
-          modalTitle.textContent = itemToEdit ? 'Termin bearbeiten' : 'Neuer Termin';
-          const data = itemToEdit || { firstName: '', lastName: '', room: '', address: '', date: new Date().toISOString().split('T')[0], time: new Date().toTimeString().slice(0,5) };
-          formHtml = `
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input name="firstName" value="${data.firstName}" placeholder="Vorname" class="p-2 border rounded-md" required />
-                <input name="lastName" value="${data.lastName}" placeholder="Nachname" class="p-2 border rounded-md" required />
-                <input name="room" value="${data.room}" placeholder="Zimmer" class="p-2 border rounded-md" required />
-                <input name="address" value="${data.address}" placeholder="Adresse" class="p-2 border rounded-md" required />
-                <input name="date" type="date" value="${data.date}" class="p-2 border rounded-md" required />
-                <input name="time" type="time" value="${data.time}" class="p-2 border rounded-md" required />
-              </div>
-          `;
-      } else if (state.activeTab === 'transfers') {
-          modalTitle.textContent = itemToEdit ? 'Transfer bearbeiten' : 'Neuer Transfer';
-          const data = itemToEdit || { name: '', zimmernummer: '', ziel: '', date: new Date().toISOString().split('T')[0], time: new Date().toTimeString().slice(0,5) };
-          formHtml = `
-              <input name="name" value="${data.name}" placeholder="Name" class="w-full p-2 border rounded-md" required />
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <input name="zimmernummer" value="${data.zimmernummer}" placeholder="Zimmernummer" class="p-2 border rounded-md" required />
-                <input name="ziel" value="${data.ziel}" placeholder="Ziel" class="p-2 border rounded-md" required />
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <input name="date" type="date" value="${data.date}" class="p-2 border rounded-md" required />
-                <input name="time" type="time" value="${data.time}" class="p-2 border rounded-md" required />
-              </div>
-          `;
-      } else if (state.activeTab === 'notes') {
-          modalTitle.textContent = itemToEdit ? 'Notiz bearbeiten' : 'Neue Notiz';
-          const data = itemToEdit || { title: '', content: '', isImportant: false };
-          formHtml = `
-              <input name="title" value="${data.title}" placeholder="Titel" class="w-full p-2 border rounded-md" required />
-              <textarea name="content" placeholder="Inhalt" rows="4" class="w-full p-2 border rounded-md mt-4" required>${data.content}</textarea>
-              <div class="flex items-center gap-2 mt-4">
-                <input id="isImportant" name="isImportant" type="checkbox" ${data.isImportant ? 'checked' : ''} class="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500" />
-                <label for="isImportant" class="text-sm font-medium text-slate-700">Als wichtig markieren</label>
-              </div>
-          `;
-      }
-      
-      formHtml += `
-          <div class="flex justify-end gap-3 mt-6">
-              <button type="button" id="modal-cancel-btn" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md">Abbrechen</button>
-              <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-md">Speichern</button>
-          </div>`;
-
-      modalForm.innerHTML = formHtml;
-      document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
-  };
-  
-  const closeModal = () => {
-      state.isModalOpen = false;
-      state.editingItemId = null;
-      modal.classList.add('hidden');
-      modalForm.innerHTML = '';
-  };
-  
-  const handleFormSubmit = (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData.entries());
-
-      // Handle checkbox
-      if (state.activeTab === 'notes') {
-          data.isImportant = formData.has('isImportant');
-      }
-
-      const list = state[state.activeTab];
-      if (state.editingItemId) {
-          const index = list.findIndex(item => item.id === state.editingItemId);
-          if (index > -1) {
-              const originalItem = list[index];
-              list[index] = { ...originalItem, ...data };
-          }
-      } else {
-          data.id = crypto.randomUUID();
-          data.createdAt = new Date().toISOString();
-          list.push(data);
-      }
-
-      saveState();
-      render();
-      closeModal();
-  };
-
   // --- ACTIONS ---
   const switchTab = (tabId) => {
     state.activeTab = tabId;
     render();
   };
   
-  const handleDelete = (id) => {
-      if (window.confirm('Diesen Eintrag wirklich löschen?')) {
-          state[state.activeTab] = state[state.activeTab].filter(item => item.id !== id);
-          saveState();
-          render();
-      }
-  };
-
-  const handleEdit = (id) => {
-      state.editingItemId = id;
-      openModal();
-  };
-  
-  const clearAllData = () => {
-    if (window.confirm('Wirklich alle Daten (Termine, Transfers, Notizen) löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
-      state.appointments = [];
-      state.transfers = [];
-      state.notes = [];
-      saveState();
+  const initializeApp = () => {
+      // Render a loading state immediately
+      updateDateTime();
+      statsContainer.innerHTML = `
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center animate-pulse">
+          <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
+          <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
+          <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
+          <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
+      </div>`;
+      contentContainer.innerHTML = `<div class="text-center py-16 text-slate-500">Daten werden geladen...</div>`;
+      notificationsContainer.innerHTML = `<div class="card bg-white rounded-xl p-4 shadow-lg shadow-slate-200/60 animate-pulse"><div class="h-6 bg-slate-100 rounded w-1/3 mb-3"></div><div class="space-y-3"><div class="h-10 bg-slate-100 rounded"></div><div class="h-10 bg-slate-100 rounded"></div></div></div>`;
+      
+      loadState();
+      
+      // Now render the actual content
       render();
-    }
-  };
-
-  const exportData = () => {
-    const dataToExport = {
-        appointments: state.appointments,
-        transfers: state.transfers,
-        notes: state.notes
-    };
-    const dataStr = JSON.stringify(dataToExport, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'drk_teamverwaltung_daten.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const importData = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const importedData = JSON.parse(event.target.result);
-        
-        const isValid = importedData && Array.isArray(importedData.appointments) && Array.isArray(importedData.transfers) && Array.isArray(importedData.notes);
-
-        if (!isValid) {
-          alert('Ungültiges Dateiformat. Die Datei muss "appointments", "transfers" und "notes" als Arrays enthalten.');
-          return;
-        }
-
-        if (window.confirm('Möchten Sie die Daten importieren? Alle aktuellen Daten werden überschrieben.')) {
-          state.appointments = importedData.appointments || [];
-          state.transfers = importedData.transfers || [];
-          state.notes = importedData.notes || [];
-          saveState();
-          render();
-          alert('Daten erfolgreich importiert!');
-        }
-      } catch (error) {
-        console.error("Import failed:", error);
-        alert('Fehler beim Lesen der Datei. Stellen Sie sicher, dass es sich um eine gültige JSON-Datei handelt.');
-      } finally {
-        importFileInput.value = null;
-      }
-    };
-    reader.readAsText(file);
   };
 
 
   // --- EVENT LISTENERS ---
-  loginBtn.addEventListener('click', handleLogin);
-  pinInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleLogin();
-  });
-  logoutBtn.addEventListener('click', handleLogout);
-  exportBtn.addEventListener('click', exportData);
-  importBtn.addEventListener('click', () => importFileInput.click());
-  importFileInput.addEventListener('change', importData);
-  
-  newEntryBtn.addEventListener('click', () => {
-      state.editingItemId = null;
-      openModal();
-  });
-
   tabsContainer.addEventListener('click', (e) => {
     const tabElement = e.target.closest('[data-tab]');
     if (tabElement) {
@@ -681,30 +378,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  contentContainer.addEventListener('click', (e) => {
-      const button = e.target.closest('button');
-      if (!button) return;
-      const { action, id } = button.dataset;
-      if (action === 'edit') {
-          handleEdit(id);
-      } else if (action === 'delete') {
-          handleDelete(id);
-      }
-  });
-
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-  
-  modalForm.addEventListener('submit', handleFormSubmit);
-
   // Set up clock
   setInterval(updateDateTime, 1000 * 30); // Update every 30 seconds is enough
+  
+  // Initialize App
+  initializeApp();
 });
 </script>
 
 </body>
 </html>
-    
