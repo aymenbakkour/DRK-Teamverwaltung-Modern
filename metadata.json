@@ -1,0 +1,5 @@
+{
+  "name": "DRK Teamverwaltung Modern",
+  "description": "Eine moderne React-Anwendung zur Verwaltung von Terminen, Transfers und Notizen für das DRK, mit Echtzeit-Statistiken und Benachrichtigungen.",
+  "requestFramePermissions": []
+}

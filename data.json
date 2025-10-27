@@ -1,0 +1,52 @@
+
+{
+  "appointments": [
+    {
+      "id": "a1",
+      "createdAt": "2024-05-21T10:00:00.000Z",
+      "firstName": "Max",
+      "lastName": "Mustermann",
+      "room": "101",
+      "address": "Klinikstraße 5, 12345 Musterstadt",
+      "date": "2024-05-22",
+      "time": "14:30"
+    },
+    {
+      "id": "a2",
+      "createdAt": "2024-05-21T11:20:00.000Z",
+      "firstName": "Anna",
+      "lastName": "Schmidt",
+      "room": "205",
+      "address": "Arztpraxis Dr. Frei, Hauptstr. 10",
+      "date": "2024-05-23",
+      "time": "10:00"
+    }
+  ],
+  "transfers": [
+    {
+      "id": "t1",
+      "createdAt": "2024-05-21T09:00:00.000Z",
+      "name": "Erika Musterfrau",
+      "zimmernummer": "202",
+      "ziel": "Reha-Zentrum Sonnenschein",
+      "date": "2024-05-22",
+      "time": "11:00"
+    }
+  ],
+  "notes": [
+    {
+      "id": "n1",
+      "createdAt": "2024-05-20T15:00:00.000Z",
+      "title": "Team-Meeting",
+      "content": "Wöchentliches Team-Meeting morgen um 8:30 Uhr im Pausenraum.",
+      "isImportant": false
+    },
+    {
+      "id": "n2",
+      "createdAt": "2024-05-21T12:00:00.000Z",
+      "title": "Wichtige Info: Patient Weber",
+      "content": "Patient in Zimmer 303 (Herr Weber) hat eine neue Medikation. Bitte Akte prüfen.",
+      "isImportant": true
+    }
+  ]
+}
