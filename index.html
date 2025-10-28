@@ -12,6 +12,29 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-out {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.5s ease-out forwards;
+    }
+    .animate-fade-out {
+      animation: fade-out 0.5s ease-in forwards;
+    }
+    @keyframes ticker-scroll {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .important-ticker-content {
+      white-space: nowrap;
+      animation: ticker-scroll linear infinite;
+      animation-duration: 40s; /* Adjust speed as needed */
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
@@ -31,10 +54,19 @@
             </div>
           </header>
 
-          <!-- Date and Time -->
-          <div id="datetime-container" class="text-center mb-6 border-t border-slate-200 pt-6">
-            <p id="current-date" class="text-lg font-semibold text-slate-500"></p>
-            <p id="current-time" class="text-5xl font-extrabold text-teal-600 tracking-tight"></p>
+          <!-- Date Display (separated) and Bewohner Count -->
+          <div class="flex justify-between items-center mb-4 border-t border-slate-200 pt-6">
+            <p id="current-date" class="inline-block px-4 py-2 bg-slate-200 text-slate-700 rounded-full text-sm font-medium shadow-sm"></p>
+            <div class="inline-block px-4 py-2 bg-slate-200 text-slate-700 rounded-full text-sm font-medium shadow-sm">
+                <span class="font-bold text-slate-800">Bewohner:</span> 74
+            </div>
+          </div>
+          
+          <!-- Countdown Container (now with its own visual separator above it) -->
+          <div class="text-center mb-6">
+            <div id="countdown-container" class="min-h-[5rem] flex items-center justify-center flex-col">
+              <!-- Countdown will be rendered here -->
+            </div>
           </div>
           
           <!-- Notifications Container -->
@@ -74,31 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
     appointments: [],
     transfers: [],
     notes: [],
+    otherAppointments: [], // New state for other appointments
   };
   
-  const INITIAL_DATA = {
-    "appointments": [],
-    "transfers": [
-      {
-        "id": "t2",
-        "createdAt": "2024-05-22T12:00:00.000Z",
-        "name": "Bashkim Zotaj",
-        "zimmernummer": "N/A",
-        "ziel": "Suhl",
-        "date": "2025-10-27",
-        "time": "12:00"
-      }
-    ],
-    "notes": [
-      {
-        "id": "n3",
-        "createdAt": "2024-05-22T12:00:01.000Z",
-        "title": "Wichtige Notiz",
-        "content": "keine hygienische Mittel geben",
-        "isImportant": true
-      }
-    ]
-  };
+  // Removed INITIAL_DATA, will fetch from data.json
 
   // --- DOM ELEMENTS ---
   const appContainer = document.getElementById('app-container');
@@ -106,40 +117,296 @@ document.addEventListener('DOMContentLoaded', () => {
   const contentContainer = document.getElementById('content-container');
   const statsContainer = document.getElementById('stats-container');
   const notificationsContainer = document.getElementById('notifications-container');
+  const countdownContainer = document.getElementById('countdown-container'); // New element
+
+
+  // --- Countdown Management Variables ---
+  let _upcomingEvents = [];
+  let _currentEventIndex = 0;
+  let _countdownRotationIntervalId = null; // for rotating events
+  let _countdownUpdateIntervalId = null; // for updating countdown numbers
 
   // --- ICONS (as functions returning SVG strings) ---
   const Icons = {
-    Calendar: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>`,
+    Calendar: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 002-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>`,
     Transfer: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8z" /><path d="M12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" /></svg>`,
-    Note: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm2 1a1 1 0 011-1h6a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V5z" clip-rule="evenodd" /></svg>`,
-    Important: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`,
+    Note: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 1 0 012-2h8a2 1 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm2 1a1 1 0 011-1h6a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V5z" clip-rule="evenodd" /></svg>`,
+    Star: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block align-text-bottom mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.718c-.783-.57-.381-1-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" /></svg>`,
+    TodayDot: () => `<svg class="w-3 h-3 text-red-500 animate-pulse" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>`,
+    Pill: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11 6a3 3 0 11-6 0 3 3 0 016 0zm-5.667 3a1 1 0 00-1 1v4.667a1 1 0 001 1h4.667a1 1 0 001-1V10a1 1 0 00-1-1h-4.667zM14 6a1 1 0 100 2h1a1 1 0 100-2h-1zM14 10a1 1 0 100 2h1a1 1 0 100-2h-1zM14 14a1 1 0 100 2h1a1 1 0 100-2h-1z" clip-rule="evenodd" /></svg>`,
+    DocumentText: () => `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0113 2.414L16.586 6A2 2 0 0117 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm0-3a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm0-3a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>`,
   };
   
   // --- DATA HANDLING ---
-  const loadState = () => {
-    // Always load from the embedded constant on load.
-    // Use structuredClone to get a fresh deep copy, so the original constant is not mutated.
-    const initialData = structuredClone(INITIAL_DATA);
-    state.appointments = initialData.appointments || [];
-    state.transfers = initialData.transfers || [];
-    state.notes = initialData.notes || [];
+  const loadState = async () => {
+    try {
+      const response = await fetch('data.json');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      state.appointments = data.appointments || [];
+      state.transfers = data.transfers || [];
+      state.notes = data.notes || [];
+      state.otherAppointments = data.otherAppointments || []; // Load other appointments
+    } catch (error) {
+      console.error("Failed to load data from data.json:", error);
+      // Fallback: leave state empty or provide default values if fetch fails
+      state.appointments = [];
+      state.transfers = [];
+      state.notes = [];
+      state.otherAppointments = [];
+    }
   };
 
   const saveState = () => {
     // This function is intentionally left empty to make state changes temporary for the session.
     // Changes will not be persisted.
   };
+
+  // --- Helper for date operations ---
+  const addDays = (date, days) => {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+  };
+
+  const getTodayIsoDateString = () => { // Renamed for clarity
+      return new Date().toISOString().split('T')[0];
+  }
+
+  const isEventExpired = (eventDate, eventTime) => {
+      const eventDateTime = new Date(`${eventDate}T${eventTime}:00`);
+      return eventDateTime.getTime() < new Date().getTime();
+  };
+
+  const isEventHappeningToday = (eventDate) => { // Renamed for clarity
+      const today = new Date();
+      const eventDay = new Date(eventDate);
+      return today.getFullYear() === eventDay.getFullYear() &&
+             today.getMonth() === eventDay.getMonth() &&
+             today.getDate() === eventDay.getDate();
+  };
+  
+  // --- Countdown Logic ---
+  const getSortedUpcomingEvents = () => {
+      const now = new Date();
+      const allEvents = [];
+
+      state.appointments.forEach(a => {
+          const eventDateTime = new Date(`${a.date}T${a.time}:00`);
+          if (eventDateTime.getTime() > now.getTime()) {
+              allEvents.push({
+                  id: `a-${a.id}`, // Unique ID for keying
+                  type: 'Arzttermin',
+                  name: `${a.firstName} ${a.lastName}`,
+                  time: a.time,
+                  dateTime: eventDateTime,
+                  date: a.date,
+                  specialty: a.specialty, // Include specialty
+                  sortTimestamp: eventDateTime.getTime()
+              });
+          }
+      });
+
+      state.transfers.forEach(t => {
+          const eventDateTime = new Date(`${t.date}T${t.time}:00`);
+          if (eventDateTime.getTime() > now.getTime()) {
+              allEvents.push({
+                  id: `t-${t.id}`, // Unique ID for keying
+                  type: 'Transfer',
+                  name: t.name,
+                  time: t.time,
+                  dateTime: eventDateTime,
+                  date: t.date,
+                  sortTimestamp: eventDateTime.getTime()
+              });
+          }
+      });
+
+      state.otherAppointments.forEach(oa => { // Include other appointments
+          const eventDateTime = new Date(`${oa.date}T${oa.time}:00`);
+          if (eventDateTime.getTime() > now.getTime()) {
+              allEvents.push({
+                  id: `oa-${oa.id}`, // Unique ID for keying
+                  type: 'Anderer Termin',
+                  name: `${oa.firstName} ${oa.lastName}`,
+                  time: oa.time,
+                  dateTime: eventDateTime,
+                  date: oa.date,
+                  category: oa.category, // Include category
+                  sortTimestamp: eventDateTime.getTime()
+              });
+          }
+      });
+
+      allEvents.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+
+      if (allEvents.length === 0) {
+          return [];
+      }
+
+      // Determine the cutoff date: end of day following the earliest upcoming event
+      const earliestEventDate = new Date(allEvents[0].dateTime.getFullYear(), allEvents[0].dateTime.getMonth(), allEvents[0].dateTime.getDate());
+      const cutoffDate = addDays(earliestEventDate, 1); 
+      cutoffDate.setHours(23, 59, 59, 999); // End of that day
+
+      return allEvents.filter(event => event.dateTime.getTime() <= cutoffDate.getTime());
+  };
+
+  const formatCountdown = (diff) => {
+      if (diff <= 0) return "Jetzt!";
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      let countdownString = '';
+      if (days > 0) countdownString += `${days}d `;
+      if (hours > 0 || days > 0) countdownString += `${hours}h `; 
+      countdownString += `${minutes}m ${seconds}s`;
+      return countdownString.trim();
+  };
+
+  const renderCountdownDisplayContent = (event) => {
+      const now = new Date();
+      const diff = event.dateTime.getTime() - now.getTime();
+
+      // Determine colors based on event type
+      let labelBgColor = 'bg-teal-100';
+      let labelTextColor = 'text-teal-800';
+      let detailTextColor = 'text-teal-700';
+      let countdownTextColor = 'text-teal-600'; 
+
+      if (event.type === 'Arzttermin') {
+          labelBgColor = 'bg-sky-100';
+          labelTextColor = 'text-sky-800';
+          detailTextColor = 'text-sky-700';
+          countdownTextColor = 'text-sky-600';
+      } else if (event.type === 'Transfer') {
+          labelBgColor = 'bg-emerald-100';
+          labelTextColor = 'text-emerald-800';
+          detailTextColor = 'text-emerald-700';
+          countdownTextColor = 'text-emerald-600';
+      } else if (event.type === 'Anderer Termin') { // New color scheme for other appointments
+          labelBgColor = 'bg-violet-100';
+          labelTextColor = 'text-violet-800';
+          detailTextColor = 'text-violet-700';
+          countdownTextColor = 'text-violet-600';
+      }
+
+      return `
+          <div class="flex items-baseline justify-center gap-2 mb-2">
+              <span class="px-3 py-1 rounded-full ${labelBgColor} ${labelTextColor} font-semibold text-sm shadow-sm">
+                  Nächster ${event.type}
+              </span>
+          </div>
+          <p class="text-base text-slate-500 mb-1">
+              <span class="${detailTextColor}">${event.name}</span> um <span class="${detailTextColor}">${event.time}</span> Uhr
+              ${event.specialty ? `(<span class="${detailTextColor}">${event.specialty}</span>)` : ''}
+              ${event.category ? `(<span class="${detailTextColor}">${event.category}</span>)` : ''}
+          </p>
+          <p class="text-3xl md:text-5xl font-extrabold ${countdownTextColor} tracking-tight countdown-value">${formatCountdown(diff)}</p>
+      `;
+  };
+
+  const updateCountdownNumbers = () => {
+      if (_upcomingEvents.length > 0 && countdownContainer) {
+          const currentEvent = _upcomingEvents[_currentEventIndex];
+          const now = new Date();
+          const diff = currentEvent.dateTime.getTime() - now.getTime();
+
+          const countdownTextElement = countdownContainer.querySelector('.countdown-value');
+          if (countdownTextElement) {
+              countdownTextElement.textContent = formatCountdown(diff);
+          } else { // This might happen if rotation just occurred and the new content is rendered
+              countdownContainer.innerHTML = renderCountdownDisplayContent(currentEvent);
+          }
+      } else if (countdownContainer) {
+          countdownContainer.innerHTML = `<p class="text-3xl md:text-5xl font-extrabold text-teal-600 tracking-tight">Keine anstehenden Ereignisse.</p>`;
+      }
+  };
+
+  const rotateCountdownDisplay = () => {
+      if (!_upcomingEvents || _upcomingEvents.length <= 1) { // Only rotate if there's more than one event
+          return;
+      }
+
+      if (countdownContainer) {
+          countdownContainer.classList.add('animate-fade-out');
+          setTimeout(() => {
+              _currentEventIndex = (_currentEventIndex + 1) % _upcomingEvents.length;
+              const nextEvent = _upcomingEvents[_currentEventIndex];
+              countdownContainer.innerHTML = renderCountdownDisplayContent(nextEvent);
+
+              countdownContainer.classList.remove('animate-fade-out');
+              countdownContainer.classList.add('animate-fade-in');
+              setTimeout(() => {
+                  countdownContainer.classList.remove('animate-fade-in');
+              }, 500); // Duration of fade-in
+          }, 500); // Duration of fade-out
+      }
+  };
+
+  const startCountdownRotation = () => {
+      // Clear existing intervals
+      if (_countdownRotationIntervalId) clearInterval(_countdownRotationIntervalId);
+      if (_countdownUpdateIntervalId) clearInterval(_countdownUpdateIntervalId);
+
+      _upcomingEvents = getSortedUpcomingEvents();
+      _currentEventIndex = 0;
+
+      if (_upcomingEvents.length > 0) {
+          // Initial render of the first event
+          if (countdownContainer) {
+              countdownContainer.innerHTML = renderCountdownDisplayContent(_upcomingEvents[_currentEventIndex]);
+          }
+
+          // Start interval for updating countdown numbers every second
+          _countdownUpdateIntervalId = setInterval(updateCountdownNumbers, 1000);
+
+          // Start interval for rotating events if there's more than one
+          if (_upcomingEvents.length > 1) {
+              _countdownRotationIntervalId = setInterval(rotateCountdownDisplay, 7000); // Rotate every 7 seconds
+          }
+      } else {
+          // No upcoming events
+          if (countdownContainer) {
+              countdownContainer.innerHTML = `<p class="text-3xl md:text-5xl font-extrabold text-teal-600 tracking-tight">Keine anstehenden Ereignisse.</p>`;
+          }
+      }
+  };
   
   // --- RENDERING ---
-  const updateDateTime = () => {
+  const updateDateTime = () => { // Only updates the static date
     const now = new Date();
     const dateEl = document.getElementById('current-date');
-    const timeEl = document.getElementById('current-time');
-    if (dateEl && timeEl) {
+    if (dateEl) {
         dateEl.textContent = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        timeEl.textContent = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     }
   };
+
+  const renderImportantNotesTicker = () => {
+    const importantNotes = state.notes.filter(note => note.isImportant);
+    let tickerContent = '';
+
+    if (importantNotes.length > 0) {
+      // Repeat the content a few times to ensure continuous scrolling effect
+      const repeatedContent = Array(3).fill('').map(() => 
+        importantNotes.map(note => `<span class="inline-flex items-center mx-3">${Icons.Star()} ${note.title}</span> • `).join('')
+      ).join('');
+      tickerContent = `<div class="important-ticker-content">${repeatedContent}</div>`;
+    } else {
+      tickerContent = `<div class="text-sm text-amber-700 text-center">Derzeit keine wichtigen Meldungen.</div>`;
+    }
+    return `
+      <div id="important-ticker-area" class="relative overflow-hidden min-h-[2rem] bg-amber-50 text-amber-800 rounded-md py-1 px-2 flex items-center">
+        ${tickerContent}
+      </div>
+    `;
+  };
+
 
   const render = () => {
     updateDateTime();
@@ -150,15 +417,17 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const renderTabs = () => {
       const tabs = [
-          { id: 'appointments', label: 'Termine', count: state.appointments.length, icon: Icons.Calendar() },
+          { id: 'appointments', label: 'Arzttermine', count: state.appointments.length, icon: Icons.Calendar() },
           { id: 'transfers', label: 'Transfer', count: state.transfers.length, icon: Icons.Transfer() },
-          { id: 'notes', label: 'Notizen', count: state.notes.length, icon: Icons.Note() }
+          { id: 'notes', label: 'Notizen', count: state.notes.length, icon: Icons.Note() },
+          { id: 'other-appointments', label: 'Andere Termine', count: state.otherAppointments.length, icon: Icons.DocumentText() }, // New tab
       ];
       
       const tabColors = {
           appointments: { bg: 'bg-sky-100', text: 'text-sky-700', badgeBg: 'bg-sky-600' },
           transfers: { bg: 'bg-emerald-100', text: 'text-emerald-700', badgeBg: 'bg-emerald-600' },
-          notes: { bg: 'bg-amber-100', text: 'text-amber-700', badgeBg: 'bg-amber-600' }
+          notes: { bg: 'bg-amber-100', text: 'text-amber-700', badgeBg: 'bg-amber-600' },
+          'other-appointments': { bg: 'bg-violet-100', text: 'text-violet-700', badgeBg: 'bg-violet-600' }, // New tab color scheme
       };
 
       tabsContainer.innerHTML = tabs.map(tab => {
@@ -173,9 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div data-tab="${tab.id}" class="${baseClasses} ${activeClasses}">
                   ${tab.icon}
                   ${tab.label}
-                  <span class="ml-1 px-2 py-0.5 text-xs rounded-full ${badgeClasses}">
-                      ${tab.count}
-                  </span>
+                  ${tab.count !== undefined ? `<span class="ml-1 px-2 py-0.5 text-xs rounded-full ${badgeClasses}">${tab.count}</span>` : ''}
               </div>
           `;
       }).join('');
@@ -192,72 +459,111 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'notes':
         renderNoteView();
         break;
+      case 'other-appointments': // New case for other appointments view
+        renderOtherAppointmentsView();
+        break;
     }
   };
 
   const renderAppointmentView = () => {
-      let content = `
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left text-slate-500">
-            <thead class="text-xs text-sky-800 uppercase bg-sky-50">
-              <tr>
-                <th class="px-6 py-3">Vorname</th>
-                <th class="px-6 py-3">Nachname</th>
-                <th class="px-6 py-3">Zimmer</th>
-                <th class="px-6 py-3">Adresse</th>
-                <th class="px-6 py-3">Datum</th>
-                <th class="px-6 py-3">Uhrzeit</th>
-              </tr>
-            </thead>
-            <tbody>`;
-      if (state.appointments.length > 0) {
-        state.appointments.forEach(a => {
-          content += `
-              <tr class="bg-white border-b hover:bg-slate-50">
-                <td class="px-6 py-4 font-medium text-slate-900">${a.firstName}</td>
-                <td class="px-6 py-4">${a.lastName}</td>
-                <td class="px-6 py-4">${a.room}</td>
-                <td class="px-6 py-4">${a.address}</td>
-                <td class="px-6 py-4">${new Date(a.date).toLocaleDateString('de-DE')}</td>
-                <td class="px-6 py-4">${a.time}</td>
-              </tr>`;
-        });
-      } else {
-        content += `<tr><td colSpan="6" class="text-center py-8 text-slate-400">Keine Termine vorhanden</td></tr>`;
-      }
-      content += `</tbody></table></div>`;
-      contentContainer.innerHTML = content;
+    const todayIsoDate = getTodayIsoDateString(); // Using the new helper
+    let content = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+    if (state.appointments.length > 0) {
+      // Sort appointments by date and time, upcoming first
+      const sortedAppointments = [...state.appointments].sort((a, b) => {
+        const dateTimeA = new Date(`${a.date}T${a.time}`);
+        const dateTimeB = new Date(`${b.date}T${b.time}`);
+        return dateTimeA.getTime() - dateTimeB.getTime();
+      });
+
+      sortedAppointments.forEach(a => {
+        const isExpired = isEventExpired(a.date, a.time);
+        const isToday = isEventHappeningToday(a.date); // Using the new helper
+
+        let cardClasses = `p-4 rounded-lg shadow-sm flex flex-col relative bg-sky-50 border-sky-200 border`;
+        let headerTextColor = `font-bold text-sky-800 text-lg`;
+        let detailTextColor = `text-sm text-slate-600 space-y-1 flex-grow`;
+        let labelTextColor = `font-medium text-slate-700`;
+
+        if (isExpired) {
+          cardClasses += ` opacity-50 grayscale cursor-not-allowed`;
+          headerTextColor = `font-bold text-slate-500 text-lg`;
+          detailTextColor = `text-sm text-slate-500 space-y-1 flex-grow`;
+          labelTextColor = `font-medium text-slate-400`;
+        } else {
+          cardClasses += ` transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1`;
+        }
+
+        content += `
+          <div class="${cardClasses}">
+            ${(isToday && !isExpired) ? `<div class="absolute top-2 right-2">${Icons.TodayDot()}</div>` : ''}
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="${headerTextColor}">${a.firstName} ${a.lastName}</h4>
+              ${Icons.Calendar()}
+            </div>
+            ${a.specialty ? `
+              <div class="flex items-center gap-1 mb-2">
+                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-200 text-slate-700 flex items-center">
+                  ${Icons.Pill()} ${a.specialty}
+                </span>
+              </div>
+            ` : ''}
+            <div class="${detailTextColor}">
+              <p><span class="${labelTextColor}">Zimmer:</span> ${a.room}</p>
+              <p><span class="${labelTextColor}">Adresse:</span> ${a.address}</p>
+              <p><span class="${labelTextColor}">Datum:</span> ${new Date(a.date).toLocaleDateString('de-DE')}</p>
+              <p><span class="${labelTextColor}">Uhrzeit:</span> ${a.time}</p>
+            </div>
+          </div>`;
+      });
+    } else {
+      content += `<p class="col-span-full text-center py-8 text-slate-400">Keine Arzttermine vorhanden</p>`;
+    }
+    content += `</div>`;
+    contentContainer.innerHTML = content;
   };
 
   const renderTransferView = () => {
-    let content = `
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left text-slate-500">
-          <thead class="text-xs text-emerald-800 uppercase bg-emerald-50">
-            <tr>
-              <th class="px-6 py-3">Name</th>
-              <th class="px-6 py-3">Zimmernummer</th>
-              <th class="px-6 py-3">Ziel</th>
-              <th class="px-6 py-3">Datum</th>
-              <th class="px-6 py-3">Uhrzeit</th>
-            </tr>
-          </thead>
-          <tbody>`;
+    const todayIsoDate = getTodayIsoDateString(); // Using the new helper
+    let content = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
     if (state.transfers.length > 0) {
       state.transfers.forEach(t => {
+        const isExpired = isEventExpired(t.date, t.time);
+        const isToday = isEventHappeningToday(t.date); // Using the new helper
+
+        let cardClasses = `p-4 rounded-lg shadow-sm flex flex-col relative bg-emerald-50 border-emerald-200 border`;
+        let headerTextColor = `font-bold text-emerald-800 text-lg`;
+        let detailTextColor = `text-sm text-slate-600 space-y-1 flex-grow`;
+        let labelTextColor = `font-medium text-slate-700`;
+
+        if (isExpired) {
+          cardClasses += ` opacity-50 grayscale cursor-not-allowed`;
+          headerTextColor = `font-bold text-slate-500 text-lg`;
+          detailTextColor = `text-sm text-slate-500 space-y-1 flex-grow`;
+          labelTextColor = `font-medium text-slate-400`;
+        } else {
+          cardClasses += ` transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1`;
+        }
+
         content += `
-            <tr class="bg-white border-b hover:bg-slate-50">
-              <td class="px-6 py-4 font-medium text-slate-900">${t.name}</td>
-              <td class="px-6 py-4">${t.zimmernummer}</td>
-              <td class="px-6 py-4">${t.ziel}</td>
-              <td class="px-6 py-4">${new Date(t.date).toLocaleDateString('de-DE')}</td>
-              <td class="px-6 py-4">${t.time}</td>
-            </tr>`;
+          <div class="${cardClasses}">
+            ${(isToday && !isExpired) ? `<div class="absolute top-2 right-2">${Icons.TodayDot()}</div>` : ''}
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="${headerTextColor}">${t.name}</h4>
+              ${Icons.Transfer()}
+            </div>
+            <div class="${detailTextColor}">
+              <p><span class="${labelTextColor}">Zimmernummer:</span> ${t.zimmernummer}</p>
+              <p><span class="${labelTextColor}">Ziel:</span> ${t.ziel}</p>
+              <p><span class="${labelTextColor}">Datum:</span> ${new Date(t.date).toLocaleDateString('de-DE')}</p>
+              <p><span class="${labelTextColor}">Uhrzeit:</span> ${t.time}</p>
+            </div>
+          </div>`;
       });
     } else {
-      content += `<tr><td colSpan="5" class="text-center py-8 text-slate-400">Keine Transfers vorhanden</td></tr>`;
+      content += `<p class="col-span-full text-center py-8 text-slate-400">Keine Transfers vorhanden</p>`;
     }
-    content += `</tbody></table></div>`;
+    content += `</div>`;
     contentContainer.innerHTML = content;
   };
   
@@ -269,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="p-4 rounded-lg shadow-md flex flex-col bg-amber-50 border-amber-200 border">
             <div class="flex justify-between items-start">
               <h4 class="font-bold text-slate-800 mb-2">${note.title}</h4>
-              ${note.isImportant ? Icons.Important() : ''}
+              ${note.isImportant ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>` : ''}
             </div>
             <p class="text-sm text-slate-600 flex-grow whitespace-pre-wrap break-words">${note.content}</p>
             <div class="mt-4 pt-3 border-t border-amber-200">
@@ -284,61 +590,130 @@ document.addEventListener('DOMContentLoaded', () => {
     contentContainer.innerHTML = content;
   };
 
+  const renderOtherAppointmentsView = () => {
+    const todayIsoDate = getTodayIsoDateString();
+    let content = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+    if (state.otherAppointments.length > 0) {
+      // Sort other appointments by date and time, upcoming first
+      const sortedOtherAppointments = [...state.otherAppointments].sort((a, b) => {
+        const dateTimeA = new Date(`${a.date}T${a.time}`);
+        const dateTimeB = new Date(`${b.date}T${b.time}`);
+        return dateTimeA.getTime() - dateTimeB.getTime();
+      });
+
+      sortedOtherAppointments.forEach(oa => {
+        const isExpired = isEventExpired(oa.date, oa.time);
+        const isToday = isEventHappeningToday(oa.date);
+
+        let cardClasses = `p-4 rounded-lg shadow-sm flex flex-col relative bg-violet-50 border-violet-200 border`;
+        let headerTextColor = `font-bold text-violet-800 text-lg`;
+        let detailTextColor = `text-sm text-slate-600 space-y-1 flex-grow`;
+        let labelTextColor = `font-medium text-slate-700`;
+
+        if (isExpired) {
+          cardClasses += ` opacity-50 grayscale cursor-not-allowed`;
+          headerTextColor = `font-bold text-slate-500 text-lg`;
+          detailTextColor = `text-sm text-slate-500 space-y-1 flex-grow`;
+          labelTextColor = `font-medium text-slate-400`;
+        } else {
+          cardClasses += ` transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1`;
+        }
+
+        content += `
+          <div class="${cardClasses}">
+            ${(isToday && !isExpired) ? `<div class="absolute top-2 right-2">${Icons.TodayDot()}</div>` : ''}
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="${headerTextColor}">${oa.firstName} ${oa.lastName}</h4>
+              ${Icons.DocumentText()}
+            </div>
+            ${oa.category ? `
+              <div class="flex items-center gap-1 mb-2">
+                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-200 text-slate-700 flex items-center">
+                  ${oa.category}
+                </span>
+              </div>
+            ` : ''}
+            <div class="${detailTextColor}">
+              ${oa.address ? `<p><span class="${labelTextColor}">Adresse:</span> ${oa.address}</p>` : ''}
+              ${(!oa.address && oa.room) ? `<p><span class="${labelTextColor}">Zimmer:</span> ${oa.room}</p>` : ''}
+              <p><span class="${labelTextColor}">Datum:</span> ${new Date(oa.date).toLocaleDateString('de-DE')}</p>
+              <p><span class="${labelTextColor}">Uhrzeit:</span> ${oa.time}</p>
+            </div>
+          </div>`;
+      });
+    } else {
+      content += `<p class="col-span-full text-center py-8 text-slate-400">Keine weiteren Termine vorhanden</p>`;
+    }
+    content += `</div>`;
+    contentContainer.innerHTML = content;
+  };
+
+
   const renderDashboardWidgets = () => {
       // Stats Part
-      const today = new Date().toISOString().split('T')[0];
-      const totalTodayAppointments = state.appointments.filter(a => a.date === today).length;
+      const today = getTodayIsoDateString();
+      const totalTodayAppointments = state.appointments.filter(a => isEventHappeningToday(a.date) && !isEventExpired(a.date, a.time)).length;
+      const totalTodayOtherAppointments = state.otherAppointments.filter(oa => isEventHappeningToday(oa.date) && !isEventExpired(oa.date, oa.time)).length;
+
 
       statsContainer.innerHTML = `
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div class="p-4 bg-slate-50 rounded-xl">
-              <div class="text-3xl font-bold text-teal-600">${state.appointments.length}</div>
-              <div class="text-sm text-slate-500">Termine</div>
+          <div class="p-4 bg-sky-50 rounded-xl">
+              <div class="text-3xl font-bold text-sky-600">${state.appointments.length}</div>
+              <div class="text-sm text-slate-500">Arzttermine</div>
           </div>
-          <div class="p-4 bg-slate-50 rounded-xl">
-              <div class="text-3xl font-bold text-teal-600">${state.transfers.length}</div>
+          <div class="p-4 bg-emerald-50 rounded-xl">
+              <div class="text-3xl font-bold text-emerald-600">${state.transfers.length}</div>
               <div class="text-sm text-slate-500">Transfers</div>
           </div>
-          <div class="p-4 bg-slate-50 rounded-xl">
-              <div class="text-3xl font-bold text-teal-600">${state.notes.length}</div>
-              <div class="text-sm text-slate-500">Notizen</div>
+          <div class="p-4 bg-violet-50 rounded-xl">
+              <div class="text-3xl font-bold text-violet-600">${state.otherAppointments.length}</div>
+              <div class="text-sm text-slate-500">Andere Termine</div>
           </div>
           <div class="p-4 bg-teal-50 rounded-xl">
-              <div class="text-3xl font-bold text-teal-700">${totalTodayAppointments}</div>
+              <div class="text-3xl font-bold text-teal-700">${totalTodayAppointments + totalTodayOtherAppointments}</div>
               <div class="text-sm text-slate-600">Termine Heute</div>
           </div>
       </div>
       `;
 
       // Notifications Part
-      const todayAppointments = state.appointments.filter(a => a.date === today);
-      const todayTransfers = state.transfers.filter(t => t.date === today);
-      const todayImportantNotes = state.notes.filter(n => n.isImportant && n.createdAt && n.createdAt.startsWith(today));
+      const todayAppointments = state.appointments.filter(a => isEventHappeningToday(a.date) && !isEventExpired(a.date, a.time));
+      const todayTransfers = state.transfers.filter(t => isEventHappeningToday(t.date) && !isEventExpired(t.date, t.time));
+      const todayOtherAppointments = state.otherAppointments.filter(oa => isEventHappeningToday(oa.date) && !isEventExpired(oa.date, oa.time));
       
-      let notificationsHTML = '';
-      todayAppointments.forEach(a => notificationsHTML += `
-          <div class="text-xs p-2 bg-slate-50 rounded-md">
-              <p class="font-semibold text-slate-700">Termin für heute:</p>
-              <p class="text-slate-600">${a.firstName} ${a.lastName} um ${a.time} Uhr</p>
+      let notificationsHTML_daily = '';
+      todayAppointments.forEach(a => notificationsHTML_daily += `
+          <div class="text-xs p-2 bg-sky-50 rounded-md border border-sky-100">
+              <p class="font-semibold text-sky-700">Arzttermin für heute:</p>
+              <p class="text-slate-600">${a.firstName} ${a.lastName} (${a.specialty || 'Arzt'}) um ${a.time} Uhr</p>
           </div>`);
-      todayTransfers.forEach(t => notificationsHTML += `
-          <div class="text-xs p-2 bg-slate-50 rounded-md">
-              <p class="font-semibold text-slate-700">Transfer für heute:</p>
+      todayTransfers.forEach(t => notificationsHTML_daily += `
+          <div class="text-xs p-2 bg-emerald-50 rounded-md border border-emerald-100">
+              <p class="font-semibold text-emerald-700">Transfer für heute:</p>
               <p class="text-slate-600">${t.name} (Zi. ${t.zimmernummer}) nach ${t.ziel}</p>
           </div>`);
-      todayImportantNotes.forEach(n => notificationsHTML += `
-          <div class="text-xs p-2 bg-amber-50 rounded-md border border-amber-200">
-              <p class="font-semibold text-amber-800 flex items-center gap-1">${Icons.Important()} Wichtige Notiz:</p>
-              <p class="text-amber-700">${n.title}</p>
+      todayOtherAppointments.forEach(oa => notificationsHTML_daily += `
+          <div class="text-xs p-2 bg-violet-50 rounded-md border border-violet-100">
+              <p class="font-semibold text-violet-700">Anderer Termin für heute:</p>
+              <p class="text-slate-600">${oa.firstName} ${oa.lastName} (${oa.category}) um ${oa.time} Uhr</p>
           </div>`);
-      if (notificationsHTML === '') {
-          notificationsHTML = `<p class="text-sm text-slate-400 text-center py-4">Keine neuen Meldungen für heute.</p>`;
+      if (notificationsHTML_daily === '') {
+          notificationsHTML_daily = `<p class="text-sm text-slate-400 text-center py-4">Keine neuen Meldungen für heute.</p>`;
       }
 
       notificationsContainer.innerHTML = `
         <div class="card bg-white rounded-xl p-4 shadow-lg shadow-slate-200/60">
           <h4 class="font-bold mb-3">Heutige Meldungen</h4>
-          <div class="space-y-3 max-h-64 overflow-y-auto pr-2">${notificationsHTML}</div>
+          <div class="space-y-3 max-h-64 overflow-y-auto pr-2 mb-4">
+            ${notificationsHTML_daily}
+          </div>
+
+          <!-- New "Wichtig" section with ticker -->
+          <div class="border-t border-slate-200 pt-3">
+              <h5 class="font-semibold text-sm text-slate-700 mb-2">Wichtig</h5>
+              ${renderImportantNotesTicker()}
+          </div>
         </div>
       `;
   };
@@ -349,9 +724,9 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
   };
   
-  const initializeApp = () => {
+  const initializeApp = async () => { // Made async
       // Render a loading state immediately
-      updateDateTime();
+      updateDateTime(); // Only date
       statsContainer.innerHTML = `
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center animate-pulse">
           <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
@@ -359,13 +734,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
           <div class="p-4 bg-slate-100 rounded-xl h-20"></div>
       </div>`;
+      countdownContainer.innerHTML = `<p class="text-3xl md:text-5xl font-extrabold text-slate-400 animate-pulse">Lade Ereignisse...</p>`;
       contentContainer.innerHTML = `<div class="text-center py-16 text-slate-500">Daten werden geladen...</div>`;
-      notificationsContainer.innerHTML = `<div class="card bg-white rounded-xl p-4 shadow-lg shadow-slate-200/60 animate-pulse"><div class="h-6 bg-slate-100 rounded w-1/3 mb-3"></div><div class="space-y-3"><div class="h-10 bg-slate-100 rounded"></div><div class="h-10 bg-slate-100 rounded"></div></div></div>`;
+      notificationsContainer.innerHTML = `<div class="card bg-white rounded-xl p-4 shadow-lg shadow-slate-200/60 animate-pulse"><div class="h-6 bg-slate-100 rounded w-1/3 mb-3"></div><div class="h-10 bg-slate-100 rounded"></div><div class="h-10 bg-slate-100 rounded"></div></div>`;
       
-      loadState();
+      await loadState(); // Await data loading
       
-      // Now render the actual content
-      render();
+      startCountdownRotation(); // Start countdown and rotation after loading
+      render(); // Initial render of other components
   };
 
 
@@ -376,9 +752,6 @@ document.addEventListener('DOMContentLoaded', () => {
       switchTab(tabElement.dataset.tab);
     }
   });
-
-  // Set up clock
-  setInterval(updateDateTime, 1000 * 30); // Update every 30 seconds is enough
   
   // Initialize App
   initializeApp();

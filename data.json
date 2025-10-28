@@ -1,52 +1,159 @@
-
 {
   "appointments": [
     {
-      "id": "a1",
-      "createdAt": "2024-05-21T10:00:00.000Z",
-      "firstName": "Max",
-      "lastName": "Mustermann",
-      "room": "101",
-      "address": "Klinikstraße 5, 12345 Musterstadt",
-      "date": "2024-05-22",
-      "time": "14:30"
+      "id": "appt1",
+      "createdAt": "2024-05-23T12:00:00.000Z",
+      "firstName": "Bashkim",
+      "lastName": "Zotaj",
+      "room": "119-2",
+      "address": "Wiesch Str. 4b",
+      "date": "2025-11-03",
+      "time": "15:30",
+      "specialty": "Physiotherapie"
     },
     {
-      "id": "a2",
-      "createdAt": "2024-05-21T11:20:00.000Z",
-      "firstName": "Anna",
-      "lastName": "Schmidt",
-      "room": "205",
-      "address": "Arztpraxis Dr. Frei, Hauptstr. 10",
-      "date": "2024-05-23",
-      "time": "10:00"
-    }
-  ],
-  "transfers": [
+      "id": "appt2",
+      "createdAt": "2024-05-23T12:00:00.000Z",
+      "firstName": "Bashkim",
+      "lastName": "Zotaj",
+      "room": "119/2",
+      "address": "Klosterlausnitzer Str. 81 E15, Dr. Ilka Wimmer",
+      "date": "2025-11-03",
+      "time": "07:40",
+      "specialty": "Radiologie"
+    },
     {
-      "id": "t1",
-      "createdAt": "2024-05-21T09:00:00.000Z",
-      "name": "Erika Musterfrau",
-      "zimmernummer": "202",
-      "ziel": "Reha-Zentrum Sonnenschein",
-      "date": "2024-05-22",
-      "time": "11:00"
+      "id": "appt3",
+      "createdAt": "2024-05-23T12:00:00.000Z",
+      "firstName": "Bashkim",
+      "lastName": "Zotaj",
+      "room": "119-2",
+      "address": "Klosterlausnitzer Straße 28, Eisenberg",
+      "date": "2025-11-05",
+      "time": "12:20",
+      "specialty": "Orthopädie"
+    },
+    {
+      "id": "appt4",
+      "createdAt": "2024-05-23T12:00:00.000Z",
+      "firstName": "Junior Razak",
+      "lastName": "Safouna",
+      "room": "307",
+      "address": "Marktgasse 2, Eisenberg",
+      "date": "2025-11-11",
+      "time": "14:00",
+      "specialty": "Kinderarzt"
+    },
+    {
+      "id": "appt5",
+      "createdAt": "2024-05-23T12:00:00.000Z",
+      "firstName": "Elizabeth",
+      "lastName": "Lamptey",
+      "room": "243",
+      "address": "Bei uns in Eisenberg",
+      "date": "2025-10-26",
+      "time": "15:00",
+      "specialty": "Hebamme"
+    },
+    {
+      "id": "appt6",
+      "createdAt": "2024-05-23T12:00:00.000Z",
+      "firstName": "Harison",
+      "lastName": "Lamptey + Dolmetscher",
+      "room": "243",
+      "address": "Rudolf-Breitscheid-Straße 3, Groß-Eisenberg",
+      "date": "2025-12-02",
+      "time": "11:00",
+      "specialty": "Kinderarzt"
     }
   ],
+  "transfers": [],
   "notes": [
     {
-      "id": "n1",
-      "createdAt": "2024-05-20T15:00:00.000Z",
-      "title": "Team-Meeting",
-      "content": "Wöchentliches Team-Meeting morgen um 8:30 Uhr im Pausenraum.",
-      "isImportant": false
+      "id": "n_new_1",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "title": "Urlaubsplan",
+      "content": "Bitte geben Sie den Urlaubsplan bis 15.11.2025",
+      "isImportant": true
+    }
+  ],
+  "otherAppointments": [
+    {
+      "id": "oa5",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "firstName": "Elizabeth",
+      "lastName": "Lamptey",
+      "room": "243",
+      "date": "2025-11-04",
+      "time": "10:00",
+      "category": "Rückkehrberatung",
+      "address": null
     },
     {
-      "id": "n2",
-      "createdAt": "2024-05-21T12:00:00.000Z",
-      "title": "Wichtige Info: Patient Weber",
-      "content": "Patient in Zimmer 303 (Herr Weber) hat eine neue Medikation. Bitte Akte prüfen.",
-      "isImportant": true
+      "id": "oa6",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "firstName": "Safowaa",
+      "lastName": "Maame",
+      "room": "307",
+      "date": "2025-11-04",
+      "time": "10:00",
+      "category": "Rückkehrberatung",
+      "address": null
+    },
+    {
+      "id": "oa7",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "firstName": "Owoo",
+      "lastName": "Monica",
+      "room": "119-3",
+      "date": "2025-11-04",
+      "time": "10:00",
+      "category": "Rückkehrberatung",
+      "address": null
+    },
+    {
+      "id": "oa8",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "firstName": "Saranovic",
+      "lastName": "Nermin",
+      "room": "119-1",
+      "date": "2025-11-04",
+      "time": "13:00",
+      "category": "Rückkehrberatung",
+      "address": null
+    },
+    {
+      "id": "oa9",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "firstName": "Coly",
+      "lastName": "Aissatou",
+      "room": "303",
+      "date": "2025-11-11",
+      "time": "10:00",
+      "category": "Rückkehrberatung",
+      "address": null
+    },
+    {
+      "id": "oa10",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "firstName": "Sagna",
+      "lastName": "Abdou",
+      "room": "324",
+      "date": "2025-11-11",
+      "time": "10:00",
+      "category": "Rückkehrberatung",
+      "address": null
+    },
+    {
+      "id": "oa11",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "firstName": "Ndiaya",
+      "lastName": "Saliou",
+      "room": "329",
+      "date": "2025-11-11",
+      "time": "10:00",
+      "category": "Rückkehrberatung",
+      "address": null
     }
   ]
 }
