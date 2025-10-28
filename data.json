@@ -231,6 +231,17 @@
       "time": "08:00",
       "category": "BAMF Termin",
       "address": null
+    },
+    {
+      "id": "oa19",
+      "createdAt": "2024-06-03T10:00:00.000Z",
+      "firstName": "Coly",
+      "lastName": "Aissatou",
+      "room": "303",
+      "date": "2025-11-06",
+      "time": "09:00",
+      "category": "BAMF Termin",
+      "address": null
     }
   ],
   "appConfig": {
