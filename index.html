@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (eventDateTime.getTime() > now.getTime()) {
               allEvents.push({
                   id: `oa-${oa.id}`, // Unique ID for keying
-                  type: 'Anderer Termin',
+                  type: 'Termin', // Renamed from 'Anderer Termin'
                   name: `${oa.firstName} ${oa.lastName}`,
                   time: oa.time,
                   dateTime: eventDateTime,
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60)) / (1000 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
       let countdownString = '';
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
           labelTextColor = 'text-emerald-800';
           detailTextColor = 'text-emerald-700';
           countdownTextColor = 'text-emerald-600';
-      } else if (event.type === 'Anderer Termin') { // New color scheme for other appointments
+      } else if (event.type === 'Termin') { // New color scheme for other appointments
           labelBgColor = 'bg-violet-100';
           labelTextColor = 'text-violet-800';
           detailTextColor = 'text-violet-700';
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
           { id: 'appointments', label: 'Arzttermine', count: state.appointments.length, icon: Icons.Calendar() },
           { id: 'transfers', label: 'Transfer', count: state.transfers.length, icon: Icons.Transfer() },
           { id: 'notes', label: 'Notizen', count: state.notes.length, icon: Icons.Note() },
-          { id: 'other-appointments', label: 'Andere Termine', count: state.otherAppointments.length, icon: Icons.DocumentText() }, // New tab
+          { id: 'other-appointments', label: 'Termine', count: state.otherAppointments.length, icon: Icons.DocumentText() }, // New tab - Renamed
       ];
       
       const tabColors = {
@@ -590,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
     contentContainer.innerHTML = content;
   };
 
-  const renderOtherAppointmentsView = () => {
+  const renderOtherAppointmentsView = () => { // Renamed to better reflect 'Termine' tab
     const todayIsoDate = getTodayIsoDateString();
     let content = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
     if (state.otherAppointments.length > 0) {
@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="p-4 bg-violet-50 rounded-xl">
               <div class="text-3xl font-bold text-violet-600">${state.otherAppointments.length}</div>
-              <div class="text-sm text-slate-500">Andere Termine</div>
+              <div class="text-sm text-slate-500">Termine</div>
           </div>
           <div class="p-4 bg-teal-50 rounded-xl">
               <div class="text-3xl font-bold text-teal-700">${totalTodayAppointments + totalTodayOtherAppointments}</div>
@@ -695,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>`);
       todayOtherAppointments.forEach(oa => notificationsHTML_daily += `
           <div class="text-xs p-2 bg-violet-50 rounded-md border border-violet-100">
-              <p class="font-semibold text-violet-700">Anderer Termin für heute:</p>
+              <p class="font-semibold text-violet-700">Termin für heute:</p>
               <p class="text-slate-600">${oa.firstName} ${oa.lastName} (${oa.category}) um ${oa.time} Uhr</p>
           </div>`);
       if (notificationsHTML_daily === '') {
