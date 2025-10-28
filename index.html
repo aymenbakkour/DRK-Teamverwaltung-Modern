@@ -55,10 +55,10 @@
           </header>
 
           <!-- Date Display (separated) and Bewohner Count -->
-          <div class="flex justify-between items-center mb-4 border-t border-slate-200 pt-6">
+          <div class="flex flex-wrap justify-between items-center gap-2 mb-4 border-t border-slate-200 pt-6">
             <p id="current-date" class="inline-block px-4 py-2 bg-slate-200 text-slate-700 rounded-full text-sm font-medium shadow-sm"></p>
-            <div class="inline-block px-4 py-2 bg-slate-200 text-slate-700 rounded-full text-sm font-medium shadow-sm">
-                <span class="font-bold text-slate-800">Bewohner:</span> 74
+            <div id="bewohner-count" class="inline-block px-4 py-2 bg-slate-200 text-slate-700 rounded-full text-sm font-medium shadow-sm">
+                <span class="font-bold text-slate-800">Bewohner:</span> <span id="residents-value"></span>
             </div>
           </div>
           
@@ -107,6 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
     transfers: [],
     notes: [],
     otherAppointments: [], // New state for other appointments
+    appConfig: { // Default empty config, will be overwritten by data.json
+        totalResidents: 0,
+        currentDataDate: '', // Renamed from lastUpdated
+        residentsLastModifiedDate: '' // New property
+    }
   };
   
   // Removed INITIAL_DATA, will fetch from data.json
@@ -118,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const statsContainer = document.getElementById('stats-container');
   const notificationsContainer = document.getElementById('notifications-container');
   const countdownContainer = document.getElementById('countdown-container'); // New element
+  const residentsValueElement = document.getElementById('residents-value'); // New element for residents count
+  
 
 
   // --- Countdown Management Variables ---
@@ -149,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.transfers = data.transfers || [];
       state.notes = data.notes || [];
       state.otherAppointments = data.otherAppointments || []; // Load other appointments
+      state.appConfig = data.appConfig || {totalResidents: 0, currentDataDate: '', residentsLastModifiedDate: ''}; // Load app config
     } catch (error) {
       console.error("Failed to load data from data.json:", error);
       // Fallback: leave state empty or provide default values if fetch fails
@@ -156,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.transfers = [];
       state.notes = [];
       state.otherAppointments = [];
+      state.appConfig = {totalResidents: 0, currentDataDate: '', residentsLastModifiedDate: ''};
     }
   };
 
@@ -171,31 +180,33 @@ document.addEventListener('DOMContentLoaded', () => {
       return result;
   };
 
-  const getTodayIsoDateString = () => { // Renamed for clarity
-      return new Date().toISOString().split('T')[0];
-  }
+  // Removed getAppLogicDateString as it's no longer used for 'today' logic.
 
-  const isEventExpired = (eventDate, eventTime) => {
-      const eventDateTime = new Date(`${eventDate}T${eventTime}:00`);
-      return eventDateTime.getTime() < new Date().getTime();
+  // UPDATED: isEventExpired now checks based on a provided current date
+  const isEventExpired = (eventDate, eventTime, currentDate) => {
+      const eventDay = new Date(eventDate);
+      // Create a date object for comparison that strips time information from currentDate
+      const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      // An event is expired if its date is strictly before the provided current date
+      return eventDay.getTime() < today.getTime();
   };
 
-  const isEventHappeningToday = (eventDate) => { // Renamed for clarity
-      const today = new Date();
+  // UPDATED: isEventHappeningToday now checks against a provided current date
+  const isEventHappeningToday = (eventDate, currentDate) => {
       const eventDay = new Date(eventDate);
-      return today.getFullYear() === eventDay.getFullYear() &&
-             today.getMonth() === eventDay.getMonth() &&
-             today.getDate() === eventDay.getDate();
+      return currentDate.getFullYear() === eventDay.getFullYear() &&
+             currentDate.getMonth() === eventDay.getMonth() &&
+             currentDate.getDate() === eventDay.getDate();
   };
   
   // --- Countdown Logic ---
   const getSortedUpcomingEvents = () => {
-      const now = new Date();
+      const now = new Date(); // Countdown uses actual current time
       const allEvents = [];
 
       state.appointments.forEach(a => {
           const eventDateTime = new Date(`${a.date}T${a.time}:00`);
-          if (eventDateTime.getTime() > now.getTime()) {
+          if (eventDateTime.getTime() > now.getTime()) { // Only truly future events
               allEvents.push({
                   id: `a-${a.id}`, // Unique ID for keying
                   type: 'Arzttermin',
@@ -211,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       state.transfers.forEach(t => {
           const eventDateTime = new Date(`${t.date}T${t.time}:00`);
-          if (eventDateTime.getTime() > now.getTime()) {
+          if (eventDateTime.getTime() > now.getTime()) { // Only truly future events
               allEvents.push({
                   id: `t-${t.id}`, // Unique ID for keying
                   type: 'Transfer',
@@ -226,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       state.otherAppointments.forEach(oa => { // Include other appointments
           const eventDateTime = new Date(`${oa.date}T${oa.time}:00`);
-          if (eventDateTime.getTime() > now.getTime()) {
+          if (eventDateTime.getTime() > now.getTime()) { // Only truly future events
               allEvents.push({
                   id: `oa-${oa.id}`, // Unique ID for keying
                   type: 'Termin', // Renamed from 'Anderer Termin'
@@ -270,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const renderCountdownDisplayContent = (event) => {
-      const now = new Date();
+      const now = new Date(); // Countdown uses actual current time
       const diff = event.dateTime.getTime() - now.getTime();
 
       // Determine colors based on event type
@@ -314,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const updateCountdownNumbers = () => {
       if (_upcomingEvents.length > 0 && countdownContainer) {
           const currentEvent = _upcomingEvents[_currentEventIndex];
-          const now = new Date();
+          const now = new Date(); // Countdown uses actual current time
           const diff = currentEvent.dateTime.getTime() - now.getTime();
 
           const countdownTextElement = countdownContainer.querySelector('.countdown-value');
@@ -379,13 +390,20 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   
   // --- RENDERING ---
-  const updateDateTime = () => { // Only updates the static date
+  const updateDateTime = () => { // Now updates to the device's actual current date
     const now = new Date();
     const dateEl = document.getElementById('current-date');
     if (dateEl) {
         dateEl.textContent = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
   };
+
+  const renderAppInfo = () => {
+    if (residentsValueElement) {
+        residentsValueElement.textContent = state.appConfig.totalResidents;
+    }
+  };
+
 
   const renderImportantNotesTicker = () => {
     const importantNotes = state.notes.filter(note => note.isImportant);
@@ -409,10 +427,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   const render = () => {
+    const actualToday = new Date(); // Get actual current date once per render cycle
     updateDateTime();
+    renderAppInfo(); // Render the new app config data
     renderTabs();
-    renderContent();
-    renderDashboardWidgets();
+    renderContent(actualToday); // Pass actualToday to renderContent
+    renderDashboardWidgets(actualToday); // Pass actualToday to renderDashboardWidgets
   };
   
   const renderTabs = () => {
@@ -434,7 +454,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const isActive = state.activeTab === tab.id;
           const activeColorSet = tabColors[tab.id];
 
-          const baseClasses = "flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-md transition-colors duration-200 cursor-pointer";
+          // Added w-full for mobile stacking and md:w-auto for larger screens
+          const baseClasses = "flex items-center justify-center md:justify-start w-full md:w-auto gap-2 px-4 py-2 text-sm font-semibold rounded-md transition-colors duration-200 cursor-pointer";
           const activeClasses = isActive ? `${activeColorSet.bg} ${activeColorSet.text}` : "text-slate-500 hover:bg-slate-100";
           const badgeClasses = isActive ? `${activeColorSet.badgeBg} text-white` : 'bg-slate-200 text-slate-600';
           
@@ -448,25 +469,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }).join('');
   };
   
-  const renderContent = () => {
+  const renderContent = (actualToday) => {
     switch (state.activeTab) {
       case 'appointments':
-        renderAppointmentView();
+        renderAppointmentView(actualToday);
         break;
       case 'transfers':
-        renderTransferView();
+        renderTransferView(actualToday);
         break;
       case 'notes':
         renderNoteView();
         break;
       case 'other-appointments': // New case for other appointments view
-        renderOtherAppointmentsView();
+        renderOtherAppointmentsView(actualToday);
         break;
     }
   };
 
-  const renderAppointmentView = () => {
-    const todayIsoDate = getTodayIsoDateString(); // Using the new helper
+  const renderAppointmentView = (actualToday) => {
     let content = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
     if (state.appointments.length > 0) {
       // Sort appointments by date and time, upcoming first
@@ -477,8 +497,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       sortedAppointments.forEach(a => {
-        const isExpired = isEventExpired(a.date, a.time);
-        const isToday = isEventHappeningToday(a.date); // Using the new helper
+        // isEventExpired and isEventHappeningToday now use the actualToday
+        const isExpired = isEventExpired(a.date, a.time, actualToday);
+        const isToday = isEventHappeningToday(a.date, actualToday);
 
         let cardClasses = `p-4 rounded-lg shadow-sm flex flex-col relative bg-sky-50 border-sky-200 border`;
         let headerTextColor = `font-bold text-sky-800 text-lg`;
@@ -523,13 +544,13 @@ document.addEventListener('DOMContentLoaded', () => {
     contentContainer.innerHTML = content;
   };
 
-  const renderTransferView = () => {
-    const todayIsoDate = getTodayIsoDateString(); // Using the new helper
+  const renderTransferView = (actualToday) => {
     let content = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
     if (state.transfers.length > 0) {
       state.transfers.forEach(t => {
-        const isExpired = isEventExpired(t.date, t.time);
-        const isToday = isEventHappeningToday(t.date); // Using the new helper
+        // isEventExpired and isEventHappeningToday now use the actualToday
+        const isExpired = isEventExpired(t.date, t.time, actualToday);
+        const isToday = isEventHappeningToday(t.date, actualToday);
 
         let cardClasses = `p-4 rounded-lg shadow-sm flex flex-col relative bg-emerald-50 border-emerald-200 border`;
         let headerTextColor = `font-bold text-emerald-800 text-lg`;
@@ -590,8 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
     contentContainer.innerHTML = content;
   };
 
-  const renderOtherAppointmentsView = () => { // Renamed to better reflect 'Termine' tab
-    const todayIsoDate = getTodayIsoDateString();
+  const renderOtherAppointmentsView = (actualToday) => { // Renamed to better reflect 'Termine' tab
     let content = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
     if (state.otherAppointments.length > 0) {
       // Sort other appointments by date and time, upcoming first
@@ -602,8 +622,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       sortedOtherAppointments.forEach(oa => {
-        const isExpired = isEventExpired(oa.date, oa.time);
-        const isToday = isEventHappeningToday(oa.date);
+        // isEventExpired and isEventHappeningToday now use the actualToday
+        const isExpired = isEventExpired(oa.date, oa.time, actualToday);
+        const isToday = isEventHappeningToday(oa.date, actualToday);
 
         let cardClasses = `p-4 rounded-lg shadow-sm flex flex-col relative bg-violet-50 border-violet-200 border`;
         let headerTextColor = `font-bold text-violet-800 text-lg`;
@@ -649,11 +670,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
 
-  const renderDashboardWidgets = () => {
+  const renderDashboardWidgets = (actualToday) => {
       // Stats Part
-      const today = getTodayIsoDateString();
-      const totalTodayAppointments = state.appointments.filter(a => isEventHappeningToday(a.date) && !isEventExpired(a.date, a.time)).length;
-      const totalTodayOtherAppointments = state.otherAppointments.filter(oa => isEventHappeningToday(oa.date) && !isEventExpired(oa.date, oa.time)).length;
+      // isEventHappeningToday and isEventExpired now use actualToday
+      const totalTodayAppointments = state.appointments.filter(a => isEventHappeningToday(a.date, actualToday) && !isEventExpired(a.date, a.time, actualToday)).length;
+      const totalTodayOtherAppointments = state.otherAppointments.filter(oa => isEventHappeningToday(oa.date, actualToday) && !isEventExpired(oa.date, oa.time, actualToday)).length;
 
 
       statsContainer.innerHTML = `
@@ -678,9 +699,10 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       // Notifications Part
-      const todayAppointments = state.appointments.filter(a => isEventHappeningToday(a.date) && !isEventExpired(a.date, a.time));
-      const todayTransfers = state.transfers.filter(t => isEventHappeningToday(t.date) && !isEventExpired(t.date, t.time));
-      const todayOtherAppointments = state.otherAppointments.filter(oa => isEventHappeningToday(oa.date) && !isEventExpired(oa.date, oa.time));
+      // isEventHappeningToday and isEventExpired now use actualToday
+      const todayAppointments = state.appointments.filter(a => isEventHappeningToday(a.date, actualToday) && !isEventExpired(a.date, a.time, actualToday));
+      const todayTransfers = state.transfers.filter(t => isEventHappeningToday(t.date, actualToday) && !isEventExpired(t.date, t.time, actualToday));
+      const todayOtherAppointments = state.otherAppointments.filter(oa => isEventHappeningToday(oa.date, actualToday) && !isEventExpired(oa.date, oa.time, actualToday));
       
       let notificationsHTML_daily = '';
       todayAppointments.forEach(a => notificationsHTML_daily += `
@@ -727,6 +749,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const initializeApp = async () => { // Made async
       // Render a loading state immediately
       updateDateTime(); // Only date
+      if (residentsValueElement) residentsValueElement.textContent = 'Lädt...';
+
       statsContainer.innerHTML = `
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center animate-pulse">
           <div class="p-4 bg-slate-100 rounded-xl h-20"></div>

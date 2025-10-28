@@ -232,5 +232,10 @@
       "category": "BAMF Termin",
       "address": null
     }
-  ]
+  ],
+  "appConfig": {
+    "totalResidents": 87,
+    "currentDataDate": "2025-11-05",
+    "residentsLastModifiedDate": "2024-06-03"
+  }
 }
